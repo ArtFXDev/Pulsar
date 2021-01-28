@@ -59,7 +59,7 @@
   "devDependencies": {
     "chalk": "^3.0.0",
     "clean-jsdoc-theme": "^2.2.11",
-    "electron": "^6.0.10",
+    "electron": "^9.4.0",
     "electron-builder": "^21.2.0",
     "eslint": "^7.4.0",
     "eslint-config-standard": "^14.1.1",
