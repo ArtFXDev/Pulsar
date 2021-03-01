@@ -1,0 +1,70 @@
+.nodes-box
+  position: relative
+  min-width: 250px
+
+  .nodes-box-header
+    height: 35px
+    padding-left: 10px
+    background-color: rgba(#e84118, 0.5)
+    border-top-left-radius: $radius
+    border-top-right-radius: $radius
+    cursor: move
+
+    .nodes-box-title
+      font-size: 24px
+
+  .nodes-box-inner
+    min-height: 200px
+    background-color: rgba(#e84118, 0.1)
+    border: 2px solid rgba(#e84118, 0.5)
+    border-bottom-left-radius: $radius
+    border-bottom-right-radius: $radius
+
+.resizer
+  position: absolute
+  width: 4px
+  height: 4px
+
+  &.top
+    top: 0
+    left: 4px
+    width: calc(100% - 8px)
+    cursor: n-resize
+
+  &.bottom
+    bottom: -35px
+    left: 4px
+    width: calc(100% - 8px)
+    cursor: s-resize
+
+  &.left
+    top: 4px
+    left: 0
+    height: calc(100% + 35px - 8px)
+    cursor: w-resize
+
+  &.right
+    top: 4px
+    right: 0
+    height: calc(100% + 35px - 8px)
+    cursor: e-resize
+
+  &.top-left
+    top: 0
+    left: 0
+    cursor: nwse-resize
+
+  &.top-right
+    top: 0
+    right: 0
+    cursor: nesw-resize
+
+  &.bottom-left
+    bottom: -35px
+    left: 0
+    cursor: nesw-resize
+
+  &.bottom-right
+    bottom: -35px
+    right: 0
+    cursor: nwse-resize

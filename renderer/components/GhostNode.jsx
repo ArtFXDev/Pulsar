@@ -45,7 +45,7 @@ export default class GhostNode extends React.Component {
                   ? <div className="input-container" key={index}>
                     <div className={`attribute-pin attribute-type-${input.type} ${this.props.theme}`}></div>
                     <div className="attribute-name-container">
-                      <span className="attribute-name">{input.name}</span>
+                      <span className="attribute-name">{input.label}</span>
                     </div>
                   </div>
                   : ''
@@ -55,7 +55,7 @@ export default class GhostNode extends React.Component {
               {this.props.outputs.map((output, index) => (
                 <div className="output-container" key={index}>
                   <div className="attribute-name-container">
-                    <span className="attribute-name">{output.name}</span>
+                    <span className="attribute-name">{output.label}</span>
                   </div>
                   <div className={`attribute-pin attribute-type-${output.type} ${this.props.theme}`}></div>
                 </div>

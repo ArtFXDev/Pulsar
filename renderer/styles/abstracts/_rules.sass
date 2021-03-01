@@ -88,7 +88,8 @@ div, p, h1, h2, h3, h4, h5, h6, a, button, input, textarea
   position: fixed
   top: 0
   right: 0
-  width: calc(100% - 250px)
+  width: 100%
+  // width: calc(100% - 250px)
   display: flex
   flex-direction: column
   transition: all 0.3s
@@ -98,8 +99,8 @@ div, p, h1, h2, h3, h4, h5, h6, a, button, input, textarea
     background-color: themed('bg')
     border-color: themed('text')
 
-  &.full
-    width: calc(100% - 80px)
+  // &.full
+  //   width: calc(100% - 80px)
 
 .bg-main
   @include themify($themes)

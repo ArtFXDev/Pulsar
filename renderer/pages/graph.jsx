@@ -6,12 +6,15 @@ import * as THREE from 'three'
 import { Canvas } from 'react-three-fiber'
 
 import GhostNode from '../components/GhostNode'
-import Nav from '../components/Nav'
+// import Nav from '../components/Nav'
 import Node from '../components/Node'
-import NodeProperties from '../containers/NodeProperties'
+import NodesBox from '../components/NodesBox'
 import Edge from '../components/Edge'
 
 import Box from '../components/3D/Box'
+
+import NodeProperties from '../containers/NodeProperties'
+import Toolbar from '../containers/Toolbar'
 
 import '../styles/graph.sass'
 
@@ -25,9 +28,6 @@ export default class Graph extends React.Component {
       theme: 'theme-light',
       primaryColor: 'green',
 
-      projects: {},
-
-      navOpen: false,
       nodeSearchOpen: false,
       nodeSearchPosition: {
         x: 500,
@@ -86,8 +86,16 @@ export default class Graph extends React.Component {
       },
 
       nodes: {},
-
-      edges: {}
+      edges: {},
+      nodeBoxes: {
+        testbox1: {
+          title: 'test box 1',
+          x: 10200,
+          y: 10200,
+          width: 400,
+          height: 400
+        }
+      },
     }
   }
 
@@ -185,7 +193,7 @@ export default class Graph extends React.Component {
     }
     if (e.button === 0 && this.state.ghostNodeActive) {
       this.createNode(e)
-    } else if (e.button === 0 && e.target.getAttribute('draggable') === 'true') {
+    } else if (e.button === 0 && e.target.getAttribute('draggable') === 'true' && e.target.getAttribute('nodeId')) {
       e.preventDefault()
       const active = true
       const dragItem = e.target.getAttribute('nodeid')
@@ -193,6 +201,19 @@ export default class Graph extends React.Component {
       const initialX = e.clientX - node.x
       const initialY = e.clientY - node.y
       this.setState({ initialX: initialX, initialY: initialY, clientInitialX: e.clientX, clientInitialY: e.clientY, active: active, dragItem: dragItem, dragType: 'node' })
+    } else if (e.button === 0 && e.target.getAttribute('attributetype')) {
+      e.preventDefault()
+      this.startEdgeDrag(e)
+    } else if (e.button === 0 && e.target.getAttribute('type') == 'nodeBox') {
+      e.preventDefault()
+      const active = true
+      const dragItem = e.target.getAttribute('nodeboxid')
+      const nodeBox = this.state.nodeBoxes[dragItem]
+      const initialX = e.clientX - nodeBox.x
+      const initialY = e.clientY - nodeBox.y
+      this.setState({ initialX: initialX, initialY: initialY, clientInitialX: e.clientX, clientInitialY: e.clientY, active: active, dragItem: dragItem, dragType: 'nodeBox' })
+    } else if (e.button === 0) {
+      this.setState({dragType: undefined, dragItem: undefined})
     } else if (e.button === 1) {
       e.preventDefault()
       const active = true
@@ -200,9 +221,6 @@ export default class Graph extends React.Component {
       const initialX = e.clientX - this.state.graphPosition.x
       const initialY = e.clientY - this.state.graphPosition.y
       this.setState({ initialX: initialX, initialY: initialY, active: active, dragItem: dragItem, dragType: 'graph', moveGraph: true })
-    } else if (e.button === 0 && e.target.getAttribute('attributetype')) {
-      e.preventDefault()
-      this.startEdgeDrag(e)
     } else if (e.button === 2 && e.target.getAttribute('draggable') !== 'true') {
       e.preventDefault()
       const pos = {
@@ -234,14 +252,17 @@ export default class Graph extends React.Component {
       if (dragType === 'node') {
         selectedNode = [dragItem]
       } else if (dragType === 'graph') {
-        selectedNode = []
+
       }
     } else {
       if (dragType === 'node') {
         const node = this.state.nodes[dragItem]
         ipcRenderer.send('setNodePosition', { id: dragItem, position: { x: node.x, y: node.y } })
+      } else if (dragType === 'nodeBox') {
+
       }
     }
+
     this.setState({
       moved: false,
       initialX: initialX,
@@ -275,11 +296,18 @@ export default class Graph extends React.Component {
         const xOffset = currentX
         const yOffset = currentY
 
-        const nodes = this.state.nodes
-        nodes[this.state.dragItem].x = currentX
-        nodes[this.state.dragItem].y = currentY
+        if (this.state.dragType === 'node') {
+          const nodes = this.state.nodes
+          nodes[this.state.dragItem].x = currentX
+          nodes[this.state.dragItem].y = currentY
+          this.setState({ moved: true, currentX: currentX, currentY: currentY, xOffset: xOffset, yOffset: yOffset, nodes: nodes })
+        } else if (this.state.dragType === 'nodeBox') {
+          const nodeBoxes = this.state.nodeBoxes
+          nodeBoxes[this.state.dragItem].x = currentX
+          nodeBoxes[this.state.dragItem].y = currentY
+          this.setState({ moved: true, currentX: currentX, currentY: currentY, xOffset: xOffset, yOffset: yOffset, nodeBoxes: nodeBoxes })
+        }
 
-        this.setState({ moved: true, currentX: currentX, currentY: currentY, xOffset: xOffset, yOffset: yOffset, nodes: nodes })
       }
     } else if (this.state.draggingEdge) {
       this.dragEdge(e)
@@ -438,6 +466,10 @@ export default class Graph extends React.Component {
     this.setState({ nodeOptionsOpen: false, nodeOptionsNode: undefined })
   }
 
+  createNodeBox(e) {
+
+  }
+
   changeInputValue (input, value) {
     const nodes = this.state.nodes
     const inputIndex = nodes[this.state.selectedNode[0]].inputs.findIndex((item) => { return item.name === input })
@@ -448,24 +480,6 @@ export default class Graph extends React.Component {
 
   selectInputFile (input, extensions) {
     ipcRenderer.send('selectInputFile', { node: this.state.selectedNode[0], input: input, extensions: extensions })
-  }
-
-  setNodeProject (project) {
-    const nodes = this.state.nodes
-    const node = nodes[this.state.selectedNode[0]]
-    const inputIndex = node.inputs.findIndex((item) => { return item.name === 'project' })
-    node.inputs[inputIndex].value = project
-    nodes[this.state.selectedNode[0]] = node
-    this.setState({ nodes: nodes })
-  }
-
-  setNodePathType (type) {
-    const nodes = this.state.nodes
-    const node = nodes[this.state.selectedNode[0]]
-    const inputIndex = node.inputs.findIndex((item) => { return item.name === 'assetshot' })
-    node.inputs[inputIndex].value = type
-    nodes[this.state.selectedNode[0]] = node
-    this.setState({ nodes: nodes })
   }
 
   executeGraph () {
@@ -493,6 +507,23 @@ export default class Graph extends React.Component {
         inputs={node.inputs}
         outputs={node.outputs}
         draggingEdge={this.state.draggingEdge}
+      />
+    )
+  }
+
+  renderNodeBox (nodeBoxId, index) {
+    const nodeBox = this.state.nodeBoxes[nodeBoxId]
+    return (
+      <NodesBox
+        theme={this.state.theme}
+        primaryColor={this.state.primaryColor}
+        key={index}
+        nodeBoxId={nodeBoxId}
+        x={nodeBox.x}
+        y={nodeBox.y}
+        width={nodeBox.width}
+        height={nodeBox.height}
+        title={nodeBox.title}
       />
     )
   }
@@ -577,30 +608,29 @@ export default class Graph extends React.Component {
           <link href="line-awesome/css/line-awesome.min.css" rel="stylesheet"/>
         </Head>
 
-        <Nav
+        {/* <Nav
           open={this.state.navOpen}
           page="graph"
           theme={this.state.theme}
           primaryColor={this.state.primaryColor}
           toggleNav={(v) => this.setState({ navOpen: v })}
           connectedSoftwares={this.state.connectedSoftwares}
-        />
+        /> */}
+
 
         {this.state.selectedNode.length === 1
           ? <button style={{ zIndex: 5000, position: 'fixed', top: '50px', left: '100px' }} onClick={(e) => this.executeGraph()}>Execute</button>
           : ''
         }
 
-        <div className={this.state.navOpen ? `main ${this.state.theme} main-${this.state.primaryColor}` : `main full ${this.state.theme} main-${this.state.primaryColor}`}>
+        <div className={`main ${this.state.theme} main-${this.state.primaryColor}`}>
+          <Toolbar/>
           <NodeProperties
             theme={this.state.theme}
             primaryColor={this.state.primaryColor}
-            projects={this.state.projects}
             node={this.state.selectedNode.length === 1 ? this.state.nodes[this.state.selectedNode[0]] : undefined}
             onValueChange={(input, value) => this.changeInputValue(input, value)}
             selectFile={(input, extensions) => this.selectInputFile(input, extensions)}
-            setNodeProject={(project) => this.setNodeProject(project)}
-            setNodePathType={(type) => this.setNodePathType(type)}
           />
 
           {/* <div className="scene-view">
@@ -610,8 +640,8 @@ export default class Graph extends React.Component {
              <Box position={[-1.2, 0, 0]} />
     <Box position={[1.2, 0, 0]} />
             </Canvas>
-          </div> */}
-          {/* <div className="resizer"
+          </div>
+          <div className="resizer"
             onMouseDown={(e) => this.resizeStart(e)}
             onMouseMove={(e) => this.resize(e)}
             onMouseUp={(e) => this.resizeEnd(e)}
@@ -643,6 +673,11 @@ export default class Graph extends React.Component {
                 {Object.keys(this.state.nodes).map((nodeId, index) => (
                   this.renderNode(nodeId, index)
                 ))}
+
+                {Object.keys(this.state.nodeBoxes).map((nodeBoxId, index) => (
+                  this.renderNodeBox(nodeBoxId, index)
+                ))}
+
               </div>
               <div className="edge-container">
                 <svg>

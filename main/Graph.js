@@ -22,6 +22,7 @@ export default class Graph {
     // for(let input in edges) {
     //   this._edges[input] = new Edge(input, edges[input]);
     // }
+    this._nodeBoxes = {}
 
     this._executionPriority = {}
     this._executionOrder = []

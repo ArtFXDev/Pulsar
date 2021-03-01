@@ -8,12 +8,9 @@ import Switch from '../components/Switch'
 const NodeProperties = ({
   theme,
   primaryColor,
-  projects,
   node,
   onValueChange,
-  selectFile,
-  setNodeProject,
-  setNodePathType
+  selectFile
 }) => {
   const renderParameterInput = (input) => {
     let parameter = ('')
@@ -69,34 +66,11 @@ const NodeProperties = ({
         break
 
       case 'dropdown':
-        if (subtype == 'project') {
-          parameter = (
-            <Dropdown
-              theme={theme}
-              primaryColor={primaryColor}
-              value={input.value}
-              options={Object.keys(projects)}
-              onChange={(value) => setNodeProject(value)}
-            />
-          )
-        }
+
         break
 
       case 'switch':
-        if (subtype == 'assetshot') {
-          parameter = (
-            <Switch
-              theme={theme}
-              primaryColor={primaryColor}
-              value={input.value}
-              option1={'Asset'}
-              value1={'asset'}
-              option2={'Shot'}
-              value2={'shot'}
-              onChange={(value) => setNodePathType(value)}
-            />
-          )
-        }
+
         break
 
       default:
